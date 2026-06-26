@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Voidbreak: Planet Siege</title>
+    <title>Voidbreak: Rift Siege</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -13,22 +13,36 @@
     <main class="shell">
       <section class="stage" aria-label="Planet destruction play field">
         <div class="topbar">
-          <div>
+          <div class="brand">
             <p class="eyebrow">Voidbreak</p>
-            <h1>Planet Siege</h1>
+            <h1>Rift Siege</h1>
           </div>
-          <div class="currency" aria-live="polite">
-            <span class="currency-mark">◇</span>
-            <span id="shards">0</span>
-            <span>Void Shards</span>
+          <div class="resource-bar" aria-live="polite">
+            <div class="currency">
+              <span class="currency-mark">◇</span>
+              <strong id="shards">0</strong>
+              <span>Rift Glass</span>
+            </div>
+            <button id="reset" class="icon-button" title="Reset progress" aria-label="Reset progress">↻</button>
           </div>
         </div>
 
         <div class="canvas-wrap">
-          <canvas id="game" width="960" height="640"></canvas>
+          <canvas id="game" width="1120" height="720"></canvas>
+          <div class="scanline"></div>
           <div class="planet-hud">
-            <span id="planetName">Aurelia</span>
-            <strong id="planetHp">100%</strong>
+            <div>
+              <span class="hud-label">Target</span>
+              <strong id="planetName">Aurelia</strong>
+            </div>
+            <div class="stability">
+              <span id="planetHp">100%</span>
+              <div class="meter" aria-hidden="true"><span id="hpFill"></span></div>
+            </div>
+          </div>
+          <div class="combo-card">
+            <span>Resonance</span>
+            <strong id="combo">x1.0</strong>
           </div>
         </div>
       </section>
@@ -36,25 +50,33 @@
       <aside class="panel" aria-label="Weapons and upgrades">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">Arsenal</p>
-            <h2>Choose a rupture tool</h2>
+            <p class="eyebrow">Rupture Lab</p>
+            <h2>Pick, unlock, obliterate</h2>
           </div>
-          <button id="reset" class="icon-button" title="Reset progress" aria-label="Reset progress">↻</button>
+        </div>
+
+        <div class="focus-card">
+          <span id="focusGlyph" class="focus-glyph">⌁</span>
+          <div>
+            <p id="focusStatus">Armed</p>
+            <h3 id="focusName">Ion Harp</h3>
+            <span id="focusNote">Resonant arcs fracture crust.</span>
+          </div>
         </div>
 
         <div id="weapons" class="weapons"></div>
 
         <div class="stats">
           <div>
-            <span>Planets broken</span>
+            <span>Worlds cracked</span>
             <strong id="destroyed">0</strong>
           </div>
           <div>
-            <span>Damage rate</span>
-            <strong id="dps">0/s</strong>
+            <span>Tap force</span>
+            <strong id="dps">0/tap</strong>
           </div>
           <div>
-            <span>Current tool</span>
+            <span>Armed tool</span>
             <strong id="activeWeapon">Ion Harp</strong>
           </div>
         </div>
