@@ -16,6 +16,8 @@ Then visit `http://localhost:5173`.
 
 - Tap/click planets to fracture them.
 - Earn `Rift Glass` instead of coins.
+- Choose from Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.
+- Reform the current planet at any time after damaging or destroying it.
 - Inspect locked weapons before buying, then unlock, equip, and upgrade them.
 - Use original weapons like Ion Harp, Gravity Loom, Solar Choir, Null Needle, Mirror Monolith, and Entropy Garden.
 - Build a resonance combo for stronger taps.

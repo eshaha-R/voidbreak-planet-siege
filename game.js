@@ -8,6 +8,8 @@ const ui = {
   planetHp: document.querySelector("#planetHp"),
   hpFill: document.querySelector("#hpFill"),
   damageStage: document.querySelector("#damageStage"),
+  planets: document.querySelector("#planets"),
+  reform: document.querySelector("#reform"),
   weapons: document.querySelector("#weapons"),
   buy: document.querySelector("#buy"),
   destroyed: document.querySelector("#destroyed"),
@@ -79,14 +81,83 @@ const weapons = [
   },
 ];
 
-const planetNames = ["Aurelia", "Vesper", "Nacre-9", "Orison", "Kairox", "Velvet Moon", "Cinderglass", "Umbra Reef"];
-const planetPalettes = [
-  ["#43d6ff", "#134a7b", "#e7fbff", "#2a9f93"],
-  ["#ff9c67", "#7c2141", "#ffe0a8", "#b94c66"],
-  ["#7cf0ba", "#155d61", "#f2ffe8", "#3fba8d"],
-  ["#d5a7ff", "#46367f", "#fff2ff", "#8764ce"],
-  ["#f2d35e", "#74521e", "#fff2a8", "#b78a37"],
-  ["#ff7499", "#55273d", "#ffd5e0", "#9e405e"],
+const solarPlanets = [
+  {
+    id: "mercury",
+    name: "Mercury",
+    hp: 115,
+    radius: 0.78,
+    palette: ["#b9aa96", "#5b5149", "#f3dbc0", "#8f7c68"],
+    craters: 18,
+    texture: "rock",
+  },
+  {
+    id: "venus",
+    name: "Venus",
+    hp: 155,
+    radius: 0.9,
+    palette: ["#f2c66d", "#9f6436", "#fff1b7", "#d48b46"],
+    craters: 10,
+    texture: "storm",
+  },
+  {
+    id: "earth",
+    name: "Earth",
+    hp: 180,
+    radius: 0.95,
+    palette: ["#3ab4ff", "#123c77", "#ecfbff", "#48c68b"],
+    craters: 4,
+    texture: "continents",
+  },
+  {
+    id: "mars",
+    name: "Mars",
+    hp: 150,
+    radius: 0.86,
+    palette: ["#e47042", "#78311f", "#ffd4aa", "#b9472e"],
+    craters: 15,
+    texture: "polar",
+  },
+  {
+    id: "jupiter",
+    name: "Jupiter",
+    hp: 390,
+    radius: 1.18,
+    palette: ["#d6a66b", "#7c5233", "#fff0c8", "#b46d45"],
+    craters: 0,
+    texture: "gas",
+    spot: true,
+  },
+  {
+    id: "saturn",
+    name: "Saturn",
+    hp: 350,
+    radius: 1.08,
+    palette: ["#e7c27a", "#8b6a3f", "#fff0bd", "#c29458"],
+    craters: 0,
+    texture: "gas",
+    rings: true,
+  },
+  {
+    id: "uranus",
+    name: "Uranus",
+    hp: 300,
+    radius: 1,
+    palette: ["#8bd9e8", "#2f6f80", "#e8feff", "#63bdc8"],
+    craters: 0,
+    texture: "ice",
+    rings: true,
+  },
+  {
+    id: "neptune",
+    name: "Neptune",
+    hp: 330,
+    radius: 1.02,
+    palette: ["#416dff", "#1a286f", "#d7e2ff", "#67a3ff"],
+    craters: 0,
+    texture: "storm",
+    spot: true,
+  },
 ];
 
 const defaultState = {
@@ -94,6 +165,8 @@ const defaultState = {
   destroyed: 0,
   selected: "harp",
   equipped: "harp",
+  selectedPlanet: "earth",
+  planetStats: {},
   levels: { harp: 1 },
   bestCombo: 1,
 };
@@ -114,13 +187,16 @@ let stars = makeStars();
 
 function load() {
   const saved = JSON.parse(localStorage.getItem("voidbreak-save") || "null");
-  if (!saved) return { ...defaultState, levels: { ...defaultState.levels } };
+  if (!saved) return { ...defaultState, planetStats: {}, levels: { ...defaultState.levels } };
+  const selectedPlanet = solarPlanets.some((item) => item.id === saved.selectedPlanet) ? saved.selectedPlanet : "earth";
 
   return {
     ...defaultState,
     ...saved,
     selected: saved.selected || "harp",
     equipped: saved.equipped || (saved.levels?.[saved.selected] ? saved.selected : "harp"),
+    selectedPlanet,
+    planetStats: saved.planetStats || {},
     levels: { harp: 1, ...(saved.levels || {}) },
   };
 }
@@ -139,12 +215,15 @@ function makeStars() {
   }));
 }
 
-function makePlanet() {
-  const maxHp = Math.round(130 * Math.pow(1.22, state.destroyed));
-  const palette = planetPalettes[state.destroyed % planetPalettes.length];
+function makePlanet(id = state.selectedPlanet) {
+  const profile = planetProfile(id);
+  const clears = state.planetStats?.[profile.id]?.destroyed || 0;
+  const maxHp = Math.round(profile.hp * Math.pow(1.16, clears));
   return {
-    name: planetNames[state.destroyed % planetNames.length],
-    palette,
+    id: profile.id,
+    name: profile.name,
+    profile,
+    palette: profile.palette,
     hp: maxHp,
     maxHp,
     spin: Math.random() * Math.PI,
@@ -154,10 +233,16 @@ function makePlanet() {
     exploding: false,
     explosionTime: 0,
     announced: {},
-    veins: Array.from({ length: 20 }, (_, index) => ({
+    veins: Array.from({ length: profile.texture === "gas" ? 26 : 20 }, (_, index) => ({
       offset: -0.9 + index * 0.094 + Math.random() * 0.025,
       width: 0.42 + Math.random() * 0.5,
       alpha: 0.09 + Math.random() * 0.14,
+    })),
+    craters: Array.from({ length: profile.craters }, () => ({
+      angle: Math.random() * Math.PI * 2,
+      distance: Math.random() * 0.82,
+      size: 0.035 + Math.random() * 0.08,
+      shade: 0.12 + Math.random() * 0.18,
     })),
     fractures: Array.from({ length: 34 }, () => ({
       angle: Math.random() * Math.PI * 2,
@@ -174,11 +259,15 @@ function makePlanet() {
   };
 }
 
+function planetProfile(id) {
+  return solarPlanets.find((item) => item.id === id) || solarPlanets.find((item) => item.id === "earth");
+}
+
 function planetGeometry() {
   return {
     cx: canvas.width / 2,
     cy: canvas.height / 2 + 34,
-    radius: Math.min(canvas.width, canvas.height) * 0.27,
+    radius: Math.min(canvas.width, canvas.height) * 0.245 * planet.profile.radius,
   };
 }
 
@@ -371,6 +460,8 @@ function startExplosion() {
   if (planet.exploding) return;
 
   const reward = Math.round(110 + planet.maxHp * 0.48 + combo * 46);
+  const stats = state.planetStats[planet.id] || { destroyed: 0 };
+  state.planetStats[planet.id] = { destroyed: stats.destroyed + 1 };
   planet.exploding = true;
   planet.explosionTime = 1750;
   planet.hp = 0;
@@ -391,11 +482,11 @@ function startExplosion() {
 
 function finishExplosion() {
   if (!planet.exploding) return;
-  planet = makePlanet();
+  planet = makePlanet(state.selectedPlanet);
   pointer.active = false;
   pointer.inside = false;
   aimAccumulator = 0;
-  showBlast("NEXT TARGET");
+  showBlast(`${planet.name.toUpperCase()} REFORMED`);
   renderUI();
 }
 
@@ -421,6 +512,34 @@ function selectWeapon(id) {
   state.selected = id;
   if (levelFor(id) > 0) state.equipped = id;
   save();
+  renderUI();
+}
+
+function clearTargetEffects() {
+  clearTimeout(explosionTimeout);
+  impacts = [];
+  debris = [];
+  damageNumbers = [];
+  beams = [];
+  aimAccumulator = 0;
+  pointer.active = false;
+  pointer.inside = false;
+}
+
+function selectPlanet(id) {
+  if (!solarPlanets.some((item) => item.id === id)) return;
+  state.selectedPlanet = id;
+  clearTargetEffects();
+  planet = makePlanet(id);
+  showBlast(planet.name.toUpperCase());
+  save();
+  renderUI();
+}
+
+function reformPlanet() {
+  clearTargetEffects();
+  planet = makePlanet(state.selectedPlanet);
+  showBlast(`${planet.name.toUpperCase()} REFORMED`);
   renderUI();
 }
 
@@ -486,6 +605,22 @@ function renderUI() {
     ui.weapons.appendChild(item);
   });
 
+  ui.planets.innerHTML = "";
+  solarPlanets.forEach((target) => {
+    const stats = state.planetStats[target.id] || { destroyed: 0 };
+    const item = document.createElement("button");
+    item.className = `planet-choice ${state.selectedPlanet === target.id ? "active" : ""}`;
+    item.innerHTML = `
+      <span class="planet-dot" style="background: radial-gradient(circle at 32% 26%, ${target.palette[2]}, ${target.palette[0]} 44%, ${target.palette[1]} 100%)"></span>
+      <span>
+        <strong>${target.name}</strong>
+        <span>${stats.destroyed ? `${stats.destroyed} shattered` : `${target.hp} HP`}</span>
+      </span>
+    `;
+    item.addEventListener("click", () => selectPlanet(target.id));
+    ui.planets.appendChild(item);
+  });
+
   ui.buy.textContent = focusedLevel ? `Upgrade ${focused.name} - ${format(cost)} ◇` : `Unlock ${focused.name} - ${format(cost)} ◇`;
   ui.buy.disabled = state.shards < cost;
 }
@@ -534,6 +669,98 @@ function drawBackground(time) {
   ctx.globalAlpha = 1;
 }
 
+function drawRings(cx, cy, radius, damage, front = false) {
+  if (!planet.profile.rings) return;
+
+  ctx.save();
+  ctx.globalAlpha = front ? 0.5 + damage * 0.24 : 0.28;
+  ctx.strokeStyle = planet.profile.id === "saturn" ? "#f7ddb0" : "#b7f4ff";
+  ctx.lineWidth = front ? 7 : 10;
+  ctx.beginPath();
+  const start = front ? 0 : Math.PI;
+  const end = front ? Math.PI : Math.PI * 2;
+  ctx.ellipse(cx, cy, radius * 1.78, radius * 0.31, -0.17, start, end);
+  ctx.stroke();
+  ctx.globalAlpha *= 0.55;
+  ctx.lineWidth = front ? 2 : 4;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, radius * 2.04, radius * 0.37, -0.17, start, end);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawSurfaceTexture(cx, cy, radius, time, damage) {
+  const texture = planet.profile.texture;
+
+  if (texture === "continents") {
+    ctx.globalAlpha = 0.52;
+    ctx.fillStyle = planet.palette[3];
+    [
+      [-0.32, -0.08, 0.24, 0.13, -0.5],
+      [0.2, 0.18, 0.2, 0.1, 0.32],
+      [0.08, -0.28, 0.18, 0.08, 0.68],
+      [-0.08, 0.34, 0.16, 0.08, -0.2],
+    ].forEach(([x, y, w, h, rotate]) => {
+      ctx.beginPath();
+      ctx.ellipse(cx + x * radius, cy + y * radius, w * radius, h * radius, rotate + Math.sin(time * 0.0005) * 0.1, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  if (texture === "gas" || texture === "storm" || texture === "ice") {
+    planet.veins.forEach((vein, index) => {
+      const y = cy + vein.offset * radius + Math.sin(time * 0.0007 + index) * (7 + damage * 9);
+      ctx.globalAlpha = vein.alpha + damage * 0.12;
+      ctx.strokeStyle = index % 3 === 0 ? planet.palette[3] : "#ffffff";
+      ctx.lineWidth = radius * (texture === "gas" ? 0.046 : 0.032) * vein.width;
+      ctx.beginPath();
+      ctx.ellipse(cx + Math.sin(planet.spin + index) * 24, y, radius * (0.54 + vein.width * 0.34), radius * 0.05, Math.sin(planet.spin) * 0.18, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+  } else {
+    planet.veins.forEach((vein, index) => {
+      const y = cy + vein.offset * radius + Math.sin(time * 0.0007 + index) * (5 + damage * 6);
+      ctx.globalAlpha = vein.alpha;
+      ctx.strokeStyle = index % 3 === 0 ? planet.palette[3] : "#ffffff";
+      ctx.lineWidth = radius * 0.025 * vein.width;
+      ctx.beginPath();
+      ctx.ellipse(cx + Math.sin(planet.spin + index) * 18, y, radius * (0.42 + vein.width * 0.22), radius * 0.035, Math.sin(planet.spin) * 0.18, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+  }
+
+  if (planet.profile.spot) {
+    ctx.globalAlpha = 0.58;
+    ctx.fillStyle = planet.profile.id === "neptune" ? "#14245f" : "#b9503b";
+    ctx.beginPath();
+    ctx.ellipse(cx + radius * 0.32, cy + radius * 0.18, radius * 0.17, radius * 0.08, -0.24, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if (texture === "polar") {
+    ctx.globalAlpha = 0.44;
+    ctx.fillStyle = "#fff5dc";
+    ctx.beginPath();
+    ctx.ellipse(cx - radius * 0.08, cy - radius * 0.78, radius * 0.24, radius * 0.07, 0.15, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  planet.craters.forEach((crater) => {
+    const x = cx + Math.cos(crater.angle) * radius * crater.distance;
+    const y = cy + Math.sin(crater.angle) * radius * crater.distance;
+    const size = radius * crater.size;
+    ctx.globalAlpha = 0.28 + crater.shade;
+    ctx.fillStyle = "#05070b";
+    ctx.beginPath();
+    ctx.ellipse(x, y, size, size * 0.78, crater.angle, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 0.18;
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+}
+
 function drawPlanetBody(time) {
   const { cx, cy, radius } = planetGeometry();
   const damage = woundLevel();
@@ -542,6 +769,8 @@ function drawPlanetBody(time) {
   grad.addColorStop(0.34, planet.palette[0]);
   grad.addColorStop(0.74, planet.palette[1]);
   grad.addColorStop(1, "#070a0d");
+
+  drawRings(cx, cy, radius, damage, false);
 
   ctx.save();
   ctx.shadowColor = damage > 0.65 ? "#ff6b8a" : planet.palette[0];
@@ -553,15 +782,7 @@ function drawPlanetBody(time) {
   ctx.clip();
 
   planet.spin += 0.0026 + damage * 0.002;
-  planet.veins.forEach((vein, index) => {
-    const y = cy + vein.offset * radius + Math.sin(time * 0.0007 + index) * (7 + damage * 9);
-    ctx.globalAlpha = vein.alpha + damage * 0.12;
-    ctx.strokeStyle = index % 3 === 0 ? planet.palette[3] : "#ffffff";
-    ctx.lineWidth = radius * 0.035 * vein.width;
-    ctx.beginPath();
-    ctx.ellipse(cx + Math.sin(planet.spin + index) * 24, y, radius * (0.48 + vein.width * 0.28), radius * 0.045, Math.sin(planet.spin) * 0.18, 0, Math.PI * 2);
-    ctx.stroke();
-  });
+  drawSurfaceTexture(cx, cy, radius, time, damage);
 
   ctx.globalAlpha = damage * 0.72;
   ctx.fillStyle = "#2b050b";
@@ -633,6 +854,8 @@ function drawPlanetBody(time) {
     ctx.stroke();
   });
   ctx.restore();
+
+  drawRings(cx, cy, radius, damage, true);
 
   ctx.save();
   ctx.globalAlpha = 0.52;
@@ -923,19 +1146,16 @@ canvas.addEventListener("pointerleave", () => {
 });
 
 ui.buy.addEventListener("click", buySelected);
+ui.reform.addEventListener("click", reformPlanet);
 ui.reset.addEventListener("click", () => {
   if (!confirm("Reset Voidbreak progress?")) return;
   localStorage.removeItem("voidbreak-save");
-  clearTimeout(explosionTimeout);
+  clearTargetEffects();
   state = load();
-  planet = makePlanet();
-  impacts = [];
-  debris = [];
-  damageNumbers = [];
-  beams = [];
+  planet = makePlanet(state.selectedPlanet);
   combo = 1;
   comboTimer = 0;
-  aimAccumulator = 0;
+  showBlast("PROGRESS RESET");
   renderUI();
 });
 
