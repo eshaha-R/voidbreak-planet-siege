@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Voidbreak: Rift Siege</title>
+    <title>Cosmic Crush</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -14,17 +14,25 @@
       <section class="stage" aria-label="Planet destruction play field">
         <div class="topbar">
           <div class="brand">
-            <p class="eyebrow">Voidbreak</p>
-            <h1>Rift Siege</h1>
+            <p class="eyebrow">Planet Popper</p>
+            <h1>Cosmic Crush</h1>
           </div>
           <div class="resource-bar" aria-live="polite">
             <div class="currency">
-              <span class="currency-mark">◇</span>
+              <span class="currency-mark"></span>
               <strong id="shards">0</strong>
-              <span>Rift Glass</span>
+              <span>Coins</span>
             </div>
             <button id="reset" class="icon-button" title="Reset progress" aria-label="Reset progress">↻</button>
           </div>
+        </div>
+
+        <div class="planet-shelf">
+          <div class="section-head">
+            <p class="eyebrow">Choose Planet</p>
+            <button id="reform" class="mini-action">Reform Planet</button>
+          </div>
+          <div id="planets" class="planets" aria-label="Choose a planet"></div>
         </div>
 
         <div class="canvas-wrap">
@@ -41,11 +49,11 @@
             </div>
           </div>
           <div class="combo-card">
-            <span>Resonance</span>
+            <span>Combo</span>
             <strong id="combo">x1.0</strong>
           </div>
           <div class="breach-card">
-            <span>Core Breach</span>
+            <span>Planet Mood</span>
             <strong id="damageStage">Stable</strong>
           </div>
           <div id="blastText" class="blast-text" aria-live="polite"></div>
@@ -55,17 +63,9 @@
       <aside class="panel" aria-label="Weapons and upgrades">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">Rupture Lab</p>
-            <h2>Pick, unlock, obliterate</h2>
+            <p class="eyebrow">Toy Box</p>
+            <h2>Pick a planet popper</h2>
           </div>
-        </div>
-
-        <div class="target-deck">
-          <div class="section-head">
-            <p class="eyebrow">Solar Targets</p>
-            <button id="reform" class="mini-action">Reform</button>
-          </div>
-          <div id="planets" class="planets" aria-label="Choose a planet"></div>
         </div>
 
         <div class="focus-card">
@@ -81,15 +81,15 @@
 
         <div class="stats">
           <div>
-            <span>Worlds cracked</span>
+            <span>Popped planets</span>
             <strong id="destroyed">0</strong>
           </div>
           <div>
-            <span>Tap force</span>
+            <span>Tap power</span>
             <strong id="dps">0/tap</strong>
           </div>
           <div>
-            <span>Armed tool</span>
+            <span>Current toy</span>
             <strong id="activeWeapon">Ion Harp</strong>
           </div>
         </div>

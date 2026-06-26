@@ -1,4 +1,4 @@
-# Voidbreak: Rift Siege
+# Cosmic Crush
 
 A polished browser clicker game inspired by planet-destruction arcade sims, built as an original static web game.
 
@@ -15,7 +15,7 @@ Then visit `http://localhost:5173`.
 ## Features
 
 - Tap/click planets to fracture them.
-- Earn `Rift Glass` instead of coins.
+- Earn `Coins` from every hit and destroyed planet.
 - Choose from Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.
 - Reform the current planet at any time after damaging or destroying it.
 - Inspect locked weapons before buying, then unlock, equip, and upgrade them.

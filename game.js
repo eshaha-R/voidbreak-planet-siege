@@ -176,6 +176,7 @@ let planet = makePlanet();
 let impacts = [];
 let debris = [];
 let damageNumbers = [];
+let coinBursts = [];
 let beams = [];
 let combo = 1;
 let comboTimer = 0;
@@ -310,8 +311,14 @@ function format(value) {
   return Math.floor(value).toLocaleString();
 }
 
-function earn(amount) {
+function earn(amount, x = canvas.width * 0.78, y = 92) {
   state.shards += amount;
+  coinBursts.push({
+    x,
+    y,
+    value: amount,
+    life: 1,
+  });
   save();
 }
 
@@ -400,7 +407,14 @@ function addHitEffects(x, y, weapon, damage, source) {
 }
 
 function dealDamage(x, y, scale = 1, source = "tap") {
-  if (planet.exploding || !pointOnPlanet(x, y)) return false;
+  if (planet.exploding) return false;
+  if (!pointOnPlanet(x, y)) {
+    if (source !== "tap") return false;
+    const { cx, cy, radius } = planetGeometry();
+    const angle = Math.atan2(y - cy, x - cx) || 0;
+    x = cx + Math.cos(angle) * radius * 0.42;
+    y = cy + Math.sin(angle) * radius * 0.42;
+  }
 
   const weapon = armedWeapon();
   const damage = Math.max(1, Math.round(weaponPower(weapon) * scale));
@@ -410,7 +424,7 @@ function dealDamage(x, y, scale = 1, source = "tap") {
   combo = Math.min(4.4, combo + (source === "aim" ? 0.035 : 0.13));
   comboTimer = 1250;
   state.bestCombo = Math.max(state.bestCombo || 1, combo);
-  earn(Math.max(1, Math.round(damage * 0.2)));
+  earn(Math.max(1, Math.round(damage * 0.24)), x, y - 22);
   announceDamageStage();
 
   if (source !== "aim" || damage > 25) shake();
@@ -460,19 +474,19 @@ function startExplosion() {
   if (planet.exploding) return;
 
   const reward = Math.round(110 + planet.maxHp * 0.48 + combo * 46);
+  const { cx, cy } = planetGeometry();
   const stats = state.planetStats[planet.id] || { destroyed: 0 };
   state.planetStats[planet.id] = { destroyed: stats.destroyed + 1 };
   planet.exploding = true;
   planet.explosionTime = 1750;
   planet.hp = 0;
   makeExplosionChunks();
-  earn(reward);
+  earn(reward, cx, cy - 86);
   state.destroyed += 1;
   state.bestCombo = Math.max(state.bestCombo || 1, combo);
-  showBlast(`SHATTERED +${format(reward)} ◇`);
+  showBlast(`SHATTERED +${format(reward)} COINS`);
   shake();
 
-  const { cx, cy } = planetGeometry();
   impacts.push({ x: cx, y: cy, life: 1.55, type: "burst", color: "#ffd56d", size: 2.9 });
   for (let i = 0; i < 130; i += 1) makeDebris(cx, cy, planet.palette[i % 3], 1);
   clearTimeout(explosionTimeout);
@@ -520,6 +534,7 @@ function clearTargetEffects() {
   impacts = [];
   debris = [];
   damageNumbers = [];
+  coinBursts = [];
   beams = [];
   aimAccumulator = 0;
   pointer.active = false;
@@ -599,7 +614,7 @@ function renderUI() {
         <p>${weapon.note}</p>
         <small>${level ? `Level ${level}${state.equipped === weapon.id ? " · Armed" : ""}` : "Tap to inspect unlock"}</small>
       </span>
-      <strong class="price"><span>${level ? "Upgrade" : "Unlock"}</span>${format(nextCost(weapon))} ◇</strong>
+      <strong class="price"><span>${level ? "Upgrade" : "Unlock"}</span>${format(nextCost(weapon))} coins</strong>
     `;
     item.addEventListener("click", () => selectWeapon(weapon.id));
     ui.weapons.appendChild(item);
@@ -621,7 +636,7 @@ function renderUI() {
     ui.planets.appendChild(item);
   });
 
-  ui.buy.textContent = focusedLevel ? `Upgrade ${focused.name} - ${format(cost)} ◇` : `Unlock ${focused.name} - ${format(cost)} ◇`;
+  ui.buy.textContent = focusedLevel ? `Upgrade ${focused.name} - ${format(cost)} coins` : `Unlock ${focused.name} - ${format(cost)} coins`;
   ui.buy.disabled = state.shards < cost;
 }
 
@@ -644,14 +659,18 @@ function updatePointer(point) {
 
 function drawBackground(time) {
   const pulse = 0.5 + Math.sin(time * 0.00025) * 0.5;
-  const nebula = ctx.createRadialGradient(canvas.width * 0.62, canvas.height * 0.43, 20, canvas.width * 0.5, canvas.height * 0.5, canvas.width * 0.7);
-  nebula.addColorStop(0, `rgba(142, 246, 216, ${0.1 + pulse * 0.04})`);
-  nebula.addColorStop(0.35, "rgba(255, 107, 138, 0.08)");
-  nebula.addColorStop(1, "rgba(3, 6, 9, 0)");
-
-  ctx.fillStyle = "#030609";
+  const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  sky.addColorStop(0, "#ffe1f0");
+  sky.addColorStop(0.46, "#dff5ff");
+  sky.addColorStop(1, "#fff1c3");
+  ctx.fillStyle = sky;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = nebula;
+
+  const glow = ctx.createRadialGradient(canvas.width * 0.52, canvas.height * 0.42, 20, canvas.width * 0.52, canvas.height * 0.48, canvas.width * 0.54);
+  glow.addColorStop(0, `rgba(255, 255, 255, ${0.48 + pulse * 0.12})`);
+  glow.addColorStop(0.45, "rgba(255, 129, 173, 0.1)");
+  glow.addColorStop(1, "rgba(255, 255, 255, 0)");
+  ctx.fillStyle = glow;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   stars.forEach((star) => {
@@ -660,10 +679,10 @@ function drawBackground(time) {
       star.x = canvas.width + 5;
       star.y = Math.random() * canvas.height;
     }
-    ctx.globalAlpha = star.a * (0.7 + Math.sin(time * 0.001 + star.y) * 0.3);
-    ctx.fillStyle = "#ffffff";
+    ctx.globalAlpha = star.a * (0.55 + Math.sin(time * 0.001 + star.y) * 0.25);
+    ctx.fillStyle = star.y % 3 > 1 ? "#ff81ad" : "#ffffff";
     ctx.beginPath();
-    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+    ctx.arc(star.x, star.y, star.r * 1.35, 0, Math.PI * 2);
     ctx.fill();
   });
   ctx.globalAlpha = 1;
@@ -1088,6 +1107,23 @@ function drawDamageNumbers(delta) {
   });
 }
 
+function drawCoinBursts(delta) {
+  coinBursts = coinBursts.filter((burst) => burst.life > 0);
+  coinBursts.forEach((burst) => {
+    burst.life -= delta * 0.0015;
+    burst.y -= delta * 0.052;
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, burst.life);
+    ctx.fillStyle = "#8b5a00";
+    ctx.font = "900 24px Nunito, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.shadowColor = "#fff0a6";
+    ctx.shadowBlur = 12;
+    ctx.fillText(`+${format(burst.value)} coins`, burst.x, burst.y);
+    ctx.restore();
+  });
+}
+
 function updateAimDamage(delta) {
   pointer.inside = pointer.active && pointOnPlanet(pointer.x, pointer.y);
   if (!pointer.inside || planet.exploding) {
@@ -1121,6 +1157,7 @@ function loop(time) {
   drawImpacts(delta);
   drawDebris(delta);
   drawDamageNumbers(delta);
+  drawCoinBursts(delta);
   ui.combo.textContent = `x${combo.toFixed(1)}`;
   ui.damageStage.textContent = damageStage();
   requestAnimationFrame(loop);
@@ -1148,14 +1185,13 @@ canvas.addEventListener("pointerleave", () => {
 ui.buy.addEventListener("click", buySelected);
 ui.reform.addEventListener("click", reformPlanet);
 ui.reset.addEventListener("click", () => {
-  if (!confirm("Reset Voidbreak progress?")) return;
   localStorage.removeItem("voidbreak-save");
   clearTargetEffects();
   state = load();
   planet = makePlanet(state.selectedPlanet);
   combo = 1;
   comboTimer = 0;
-  showBlast("PROGRESS RESET");
+  showBlast("RESET DONE");
   renderUI();
 });
 
