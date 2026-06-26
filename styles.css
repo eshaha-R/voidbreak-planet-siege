@@ -189,7 +189,8 @@ canvas {
 }
 
 .planet-hud,
-.combo-card {
+.combo-card,
+.breach-card {
   position: absolute;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -262,6 +263,89 @@ canvas {
 .combo-card strong {
   color: var(--mint);
   font-size: 1.4rem;
+}
+
+.breach-card {
+  top: 24px;
+  right: 26px;
+  min-width: 154px;
+  padding: 12px 14px;
+  text-align: right;
+}
+
+.breach-card span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.breach-card strong {
+  color: var(--gold);
+  font-size: 1.12rem;
+}
+
+.blast-text {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: min(86%, 680px);
+  transform: translate(-50%, -50%) scale(0.96);
+  color: #fff7db;
+  font-size: clamp(2.4rem, 7vw, 6.5rem);
+  font-weight: 950;
+  letter-spacing: 0.02em;
+  line-height: 0.9;
+  opacity: 0;
+  pointer-events: none;
+  text-align: center;
+  text-shadow:
+    0 0 24px rgba(255, 213, 109, 0.76),
+    0 0 62px rgba(255, 107, 138, 0.46);
+}
+
+.blast-text.show {
+  animation: blast-pop 980ms ease-out;
+}
+
+.canvas-wrap.shake {
+  animation: screen-shake 220ms linear;
+}
+
+@keyframes blast-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.72);
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.18);
+  }
+}
+
+@keyframes screen-shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(7px, -4px);
+  }
+  40% {
+    transform: translate(-6px, 5px);
+  }
+  60% {
+    transform: translate(4px, 6px);
+  }
+  80% {
+    transform: translate(-5px, -3px);
+  }
 }
 
 .panel {
@@ -537,6 +621,11 @@ canvas {
   .combo-card {
     top: 12px;
     left: 12px;
+  }
+
+  .breach-card {
+    top: 12px;
+    right: 12px;
   }
 
   .weapon {
