@@ -126,6 +126,8 @@ h2 {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .currency {
@@ -158,6 +160,38 @@ h2 {
     radial-gradient(circle at 35% 30%, #fff7c9 0 26%, transparent 27%),
     linear-gradient(135deg, #ffe077, #f7a928);
   box-shadow: inset -3px -4px 0 rgba(161, 98, 0, 0.22);
+}
+
+.speed-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid rgba(255, 129, 173, 0.34);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 6px 0 rgba(131, 200, 255, 0.1);
+}
+
+.speed-controls button {
+  min-height: 38px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #6d3b59;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.speed-controls button:hover {
+  background: #fff6fb;
+}
+
+.speed-controls button.active {
+  border-color: rgba(255, 129, 173, 0.62);
+  background: linear-gradient(135deg, rgba(255, 232, 244, 0.98), rgba(255, 246, 207, 0.92));
+  color: #d45f91;
 }
 
 .icon-button,
@@ -245,6 +279,15 @@ h2 {
   border-color: var(--pink);
   background: linear-gradient(135deg, rgba(255, 232, 244, 0.95), rgba(232, 249, 255, 0.95));
   box-shadow: 0 8px 0 rgba(255, 129, 173, 0.19);
+}
+
+.planet-choice.locked {
+  opacity: 0.68;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.planet-choice.locked .planet-dot {
+  filter: grayscale(0.5);
 }
 
 .planet-choice.active .planet-dot {
@@ -479,17 +522,92 @@ canvas {
   font-size: 1.18rem;
 }
 
+.weapon-browser {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 14px 14px;
+}
+
+.weapon-categories {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  overflow: auto;
+}
+
+.category-button {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  min-height: 76px;
+  padding: 8px 5px;
+  border: 1px solid rgba(126, 92, 154, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.68);
+  color: #5b4069;
+  cursor: pointer;
+  box-shadow: 0 6px 0 rgba(131, 200, 255, 0.1);
+}
+
+.category-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 129, 173, 0.42);
+}
+
+.category-button.active {
+  border-color: var(--pink);
+  background: linear-gradient(135deg, rgba(255, 232, 244, 0.95), rgba(232, 249, 255, 0.95));
+  box-shadow: 0 6px 0 rgba(255, 129, 173, 0.16);
+}
+
+.category-button span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #d98516;
+  font-size: 1.18rem;
+  font-weight: 900;
+  box-shadow: inset 0 -4px 0 rgba(126, 92, 154, 0.08);
+}
+
+.category-button strong,
+.category-button small {
+  display: block;
+  max-width: 68px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.category-button strong {
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.category-button small {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 900;
+}
+
 .weapons {
   display: grid;
   align-content: start;
   gap: 10px;
   overflow: auto;
-  padding: 0 14px 14px;
+  padding: 0 2px 4px 0;
 }
 
 .weapon {
+  position: relative;
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) auto;
+  grid-template-columns: 46px minmax(0, 1fr);
   gap: 12px;
   align-items: center;
   min-height: 82px;
@@ -504,6 +622,25 @@ canvas {
     border-color 140ms ease,
     background 140ms ease,
     transform 140ms ease;
+}
+
+.cooldown-fill {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  transform-origin: bottom;
+  border-radius: inherit;
+  background: rgba(131, 200, 255, 0.36);
+  pointer-events: none;
+}
+
+.weapon > :not(.cooldown-fill) {
+  position: relative;
+  z-index: 1;
+}
+
+.weapon.cooling {
+  cursor: wait;
 }
 
 .weapon:hover {
@@ -555,13 +692,20 @@ canvas {
 }
 
 .weapon p {
-  margin: 2px 0 4px;
+  display: none;
+}
+
+.weapon small {
+  display: block;
+  margin-top: 4px;
 }
 
 .price {
+  grid-column: 2;
   display: grid;
   gap: 4px;
-  justify-items: end;
+  justify-items: start;
+  margin-top: 4px;
   color: #45a88f;
   font-size: 0.84rem;
   font-weight: 900;
@@ -703,12 +847,17 @@ canvas {
   }
 
   .resource-bar,
-  .currency {
+  .currency,
+  .speed-controls {
     width: 100%;
   }
 
   .currency {
     justify-content: center;
+  }
+
+  .speed-controls {
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .planet-shelf {
@@ -746,6 +895,16 @@ canvas {
 
   .weapon {
     grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .weapon-browser {
+    grid-template-columns: 1fr;
+  }
+
+  .weapon-categories {
+    grid-auto-columns: 82px;
+    grid-auto-flow: column;
+    overflow-x: auto;
   }
 
   .price {

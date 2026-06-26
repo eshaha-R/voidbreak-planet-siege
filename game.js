@@ -10,6 +10,8 @@ const ui = {
   damageStage: document.querySelector("#damageStage"),
   planets: document.querySelector("#planets"),
   reform: document.querySelector("#reform"),
+  speedControls: document.querySelector("#speedControls"),
+  categories: document.querySelector("#weaponCategories"),
   weapons: document.querySelector("#weapons"),
   buy: document.querySelector("#buy"),
   destroyed: document.querySelector("#destroyed"),
@@ -24,48 +26,109 @@ const ui = {
   focusNote: document.querySelector("#focusNote"),
 };
 
+const weaponCategories = [
+  { id: "beam", name: "Beams", glyph: "⌁" },
+  { id: "orbit", name: "Orbit", glyph: "◎" },
+  { id: "pop", name: "Poppers", glyph: "✦" },
+  { id: "core", name: "Core", glyph: "✣" },
+];
+
 const weapons = [
   {
     id: "harp",
     name: "Ion Harp",
+    category: "beam",
     glyph: "⌁",
     damage: 10,
+    cooldownMs: 180,
     cost: 0,
     color: "#8ef6d8",
     note: "Cuts crust with soundless lightning.",
   },
   {
+    id: "bubble",
+    name: "Bubble Comet",
+    category: "pop",
+    glyph: "○",
+    damage: 16,
+    cooldownMs: 420,
+    cost: 45,
+    color: "#83c8ff",
+    note: "Bouncy comet pops bright surface bubbles.",
+  },
+  {
     id: "loom",
     name: "Gravity Loom",
+    category: "orbit",
     glyph: "◎",
     damage: 27,
+    cooldownMs: 780,
     cost: 85,
     color: "#ffd56d",
     note: "Braids orbit lines into tidal collapse.",
   },
   {
+    id: "meteor",
+    name: "Candy Meteor",
+    category: "pop",
+    glyph: "◆",
+    damage: 39,
+    cooldownMs: 1050,
+    cost: 175,
+    color: "#ff9ac2",
+    note: "A sugary meteor with a heavy bonk.",
+  },
+  {
     id: "choir",
     name: "Solar Choir",
+    category: "beam",
     glyph: "✶",
     damage: 58,
+    cooldownMs: 1450,
     cost: 260,
     color: "#ffb36d",
     note: "Drops tiny stars into the mantle.",
   },
   {
+    id: "ring",
+    name: "Ring Snare",
+    category: "orbit",
+    glyph: "◌",
+    damage: 68,
+    cooldownMs: 1700,
+    cost: 420,
+    color: "#b69dff",
+    note: "Wraps the planet in squeeze-rings.",
+  },
+  {
     id: "needle",
     name: "Null Needle",
+    category: "beam",
     glyph: "⌖",
     damage: 108,
+    cooldownMs: 2300,
     cost: 680,
     color: "#72d7ff",
     note: "Deletes a pinhole through spacetime.",
   },
   {
+    id: "prism",
+    name: "Prism Beam",
+    category: "beam",
+    glyph: "△",
+    damage: 132,
+    cooldownMs: 2650,
+    cost: 1040,
+    color: "#ff81ad",
+    note: "Splits one beam into sparkly pressure.",
+  },
+  {
     id: "mirror",
     name: "Mirror Monolith",
+    category: "orbit",
     glyph: "▰",
     damage: 196,
+    cooldownMs: 3400,
     cost: 1450,
     color: "#d7c4ff",
     note: "Makes the planet fight its reflection.",
@@ -73,8 +136,10 @@ const weapons = [
   {
     id: "garden",
     name: "Entropy Garden",
+    category: "core",
     glyph: "✣",
     damage: 340,
+    cooldownMs: 5200,
     cost: 3200,
     color: "#ff6b8a",
     note: "Plants beautiful decay in the core.",
@@ -85,7 +150,8 @@ const solarPlanets = [
   {
     id: "mercury",
     name: "Mercury",
-    hp: 115,
+    hp: 420,
+    unlockCost: 0,
     radius: 0.78,
     palette: ["#b9aa96", "#5b5149", "#f3dbc0", "#8f7c68"],
     craters: 18,
@@ -94,7 +160,8 @@ const solarPlanets = [
   {
     id: "venus",
     name: "Venus",
-    hp: 155,
+    hp: 620,
+    unlockCost: 180,
     radius: 0.9,
     palette: ["#f2c66d", "#9f6436", "#fff1b7", "#d48b46"],
     craters: 10,
@@ -103,7 +170,8 @@ const solarPlanets = [
   {
     id: "earth",
     name: "Earth",
-    hp: 180,
+    hp: 820,
+    unlockCost: 420,
     radius: 0.95,
     palette: ["#3ab4ff", "#123c77", "#ecfbff", "#48c68b"],
     craters: 4,
@@ -112,7 +180,8 @@ const solarPlanets = [
   {
     id: "mars",
     name: "Mars",
-    hp: 150,
+    hp: 720,
+    unlockCost: 760,
     radius: 0.86,
     palette: ["#e47042", "#78311f", "#ffd4aa", "#b9472e"],
     craters: 15,
@@ -121,7 +190,8 @@ const solarPlanets = [
   {
     id: "jupiter",
     name: "Jupiter",
-    hp: 390,
+    hp: 1700,
+    unlockCost: 1500,
     radius: 1.18,
     palette: ["#d6a66b", "#7c5233", "#fff0c8", "#b46d45"],
     craters: 0,
@@ -131,7 +201,8 @@ const solarPlanets = [
   {
     id: "saturn",
     name: "Saturn",
-    hp: 350,
+    hp: 1550,
+    unlockCost: 2200,
     radius: 1.08,
     palette: ["#e7c27a", "#8b6a3f", "#fff0bd", "#c29458"],
     craters: 0,
@@ -141,7 +212,8 @@ const solarPlanets = [
   {
     id: "uranus",
     name: "Uranus",
-    hp: 300,
+    hp: 1350,
+    unlockCost: 3100,
     radius: 1,
     palette: ["#8bd9e8", "#2f6f80", "#e8feff", "#63bdc8"],
     craters: 0,
@@ -151,7 +223,8 @@ const solarPlanets = [
   {
     id: "neptune",
     name: "Neptune",
-    hp: 330,
+    hp: 1480,
+    unlockCost: 4200,
     radius: 1.02,
     palette: ["#416dff", "#1a286f", "#d7e2ff", "#67a3ff"],
     craters: 0,
@@ -165,10 +238,13 @@ const defaultState = {
   destroyed: 0,
   selected: "harp",
   equipped: "harp",
-  selectedPlanet: "earth",
+  activeCategory: "beam",
+  selectedPlanet: "mercury",
+  unlockedPlanets: { mercury: true },
   planetStats: {},
   levels: { harp: 1 },
   bestCombo: 1,
+  speed: 1,
 };
 
 let state = load();
@@ -183,22 +259,27 @@ let comboTimer = 0;
 let aimAccumulator = 0;
 let lastTime = 0;
 let explosionTimeout = null;
+let weaponCooldowns = {};
 let pointer = { x: canvas.width / 2, y: canvas.height / 2, active: false, inside: false };
 let stars = makeStars();
 
 function load() {
   const saved = JSON.parse(localStorage.getItem("voidbreak-save") || "null");
   if (!saved) return { ...defaultState, planetStats: {}, levels: { ...defaultState.levels } };
-  const selectedPlanet = solarPlanets.some((item) => item.id === saved.selectedPlanet) ? saved.selectedPlanet : "earth";
+  const unlockedPlanets = { mercury: true, ...(saved.unlockedPlanets || {}) };
+  const selectedPlanet = solarPlanets.some((item) => item.id === saved.selectedPlanet && unlockedPlanets[item.id]) ? saved.selectedPlanet : "mercury";
 
   return {
     ...defaultState,
     ...saved,
     selected: saved.selected || "harp",
     equipped: saved.equipped || (saved.levels?.[saved.selected] ? saved.selected : "harp"),
+    activeCategory: weaponCategories.some((item) => item.id === saved.activeCategory) ? saved.activeCategory : weaponById(saved.selected || "harp").category,
     selectedPlanet,
+    unlockedPlanets,
     planetStats: saved.planetStats || {},
     levels: { harp: 1, ...(saved.levels || {}) },
+    speed: [1, 2, 3].includes(saved.speed) ? saved.speed : 1,
   };
 }
 
@@ -219,7 +300,7 @@ function makeStars() {
 function makePlanet(id = state.selectedPlanet) {
   const profile = planetProfile(id);
   const clears = state.planetStats?.[profile.id]?.destroyed || 0;
-  const maxHp = Math.round(profile.hp * Math.pow(1.16, clears));
+  const maxHp = Math.round(profile.hp * Math.pow(1.08, clears));
   return {
     id: profile.id,
     name: profile.name,
@@ -264,11 +345,15 @@ function planetProfile(id) {
   return solarPlanets.find((item) => item.id === id) || solarPlanets.find((item) => item.id === "earth");
 }
 
+function planetUnlocked(id) {
+  return Boolean(state.unlockedPlanets?.[id]);
+}
+
 function planetGeometry() {
   return {
     cx: canvas.width / 2,
-    cy: canvas.height / 2 + 34,
-    radius: Math.min(canvas.width, canvas.height) * 0.245 * planet.profile.radius,
+    cy: canvas.height / 2 - 24,
+    radius: Math.min(canvas.width, canvas.height) * 0.285 * planet.profile.radius,
   };
 }
 
@@ -298,7 +383,8 @@ function levelFor(id) {
 
 function weaponPower(weapon) {
   const level = Math.max(1, levelFor(weapon.id));
-  return Math.round(weapon.damage * level * (1 + state.destroyed * 0.032) * combo);
+  const levelBonus = 1 + (level - 1) * 0.32;
+  return Math.round(weapon.damage * levelBonus * (1 + state.destroyed * 0.008) * combo);
 }
 
 function nextCost(weapon) {
@@ -421,10 +507,10 @@ function dealDamage(x, y, scale = 1, source = "tap") {
   planet.hp = Math.max(0, planet.hp - damage);
   addHitEffects(x, y, weapon, damage, source);
 
-  combo = Math.min(4.4, combo + (source === "aim" ? 0.035 : 0.13));
+  combo = Math.min(2.6, combo + (source === "aim" ? 0.012 : 0.045));
   comboTimer = 1250;
   state.bestCombo = Math.max(state.bestCombo || 1, combo);
-  earn(Math.max(1, Math.round(damage * 0.24)), x, y - 22);
+  earn(Math.max(1, Math.round(damage * 0.32)), x, y - 22);
   announceDamageStage();
 
   if (source !== "aim" || damage > 25) shake();
@@ -496,10 +582,8 @@ function startExplosion() {
 
 function finishExplosion() {
   if (!planet.exploding) return;
+  clearTargetEffects();
   planet = makePlanet(state.selectedPlanet);
-  pointer.active = false;
-  pointer.inside = false;
-  aimAccumulator = 0;
   showBlast(`${planet.name.toUpperCase()} REFORMED`);
   renderUI();
 }
@@ -524,9 +608,40 @@ function updateExplosion(delta) {
 
 function selectWeapon(id) {
   state.selected = id;
+  state.activeCategory = weaponById(id).category;
   if (levelFor(id) > 0) state.equipped = id;
   save();
   renderUI();
+}
+
+function selectWeaponCategory(id) {
+  if (!weaponCategories.some((category) => category.id === id)) return;
+  state.activeCategory = id;
+  const firstInCategory = weapons.find((weapon) => weapon.category === id);
+  if (firstInCategory && weaponById(state.selected).category !== id) state.selected = firstInCategory.id;
+  save();
+  renderUI();
+}
+
+function cooldownRemaining(id) {
+  return Math.max(0, (weaponCooldowns[id] || 0) - performance.now());
+}
+
+function fireWeapon(id) {
+  const weapon = weaponById(id);
+  if (!levelFor(id) || planet.exploding) return false;
+  if (cooldownRemaining(id) > 0) {
+    showBlast("COOLDOWN");
+    return false;
+  }
+  state.selected = id;
+  state.equipped = id;
+  state.activeCategory = weapon.category;
+  const { cx, cy } = planetGeometry();
+  weaponCooldowns[id] = performance.now() + weapon.cooldownMs;
+  dealDamage(cx, cy, 1, "weapon");
+  renderUI();
+  return true;
 }
 
 function clearTargetEffects() {
@@ -536,13 +651,26 @@ function clearTargetEffects() {
   damageNumbers = [];
   coinBursts = [];
   beams = [];
+  weaponCooldowns = {};
   aimAccumulator = 0;
   pointer.active = false;
   pointer.inside = false;
 }
 
 function selectPlanet(id) {
-  if (!solarPlanets.some((item) => item.id === id)) return;
+  const target = solarPlanets.find((item) => item.id === id);
+  if (!target) return;
+  if (!planetUnlocked(id)) {
+    if (state.shards >= target.unlockCost) {
+      state.shards -= target.unlockCost;
+      state.unlockedPlanets[id] = true;
+      showBlast(`${target.name.toUpperCase()} UNLOCKED`);
+    } else {
+      showBlast(`NEED ${format(target.unlockCost - state.shards)} COINS`);
+      renderUI();
+      return;
+    }
+  }
   state.selectedPlanet = id;
   clearTargetEffects();
   planet = makePlanet(id);
@@ -553,6 +681,8 @@ function selectPlanet(id) {
 
 function reformPlanet() {
   clearTargetEffects();
+  combo = 1;
+  comboTimer = 0;
   planet = makePlanet(state.selectedPlanet);
   showBlast(`${planet.name.toUpperCase()} REFORMED`);
   renderUI();
@@ -566,6 +696,7 @@ function buySelected() {
   state.levels[weapon.id] = levelFor(weapon.id) + 1;
   state.equipped = weapon.id;
   state.selected = weapon.id;
+  state.activeCategory = weapon.category;
 
   const { cx, cy } = planetGeometry();
   impacts.push({ x: cx, y: cy, life: 1.1, type: "unlock", color: weapon.color, size: 1.6 });
@@ -594,42 +725,73 @@ function renderUI() {
   ui.focusName.textContent = focused.name;
   ui.focusNote.textContent = focused.note;
   ui.focusStatus.textContent = focusedLevel ? `Level ${focusedLevel} ${focused.id === state.equipped ? "armed" : "unlocked"}` : "Locked blueprint";
+  ui.speedControls.querySelectorAll("button").forEach((button) => {
+    button.classList.toggle("active", Number(button.dataset.speed) === state.speed);
+  });
+
+  if (!weaponCategories.some((category) => category.id === state.activeCategory)) state.activeCategory = focused.category;
+
+  ui.categories.innerHTML = "";
+  weaponCategories.forEach((category) => {
+    const categoryWeapons = weapons.filter((weapon) => weapon.category === category.id);
+    const unlocked = categoryWeapons.filter((weapon) => levelFor(weapon.id) > 0).length;
+    const item = document.createElement("button");
+    item.className = `category-button ${state.activeCategory === category.id ? "active" : ""}`;
+    item.title = category.name;
+    item.setAttribute("aria-label", `${category.name} weapons`);
+    item.innerHTML = `
+      <span>${category.glyph}</span>
+      <strong>${category.name}</strong>
+      <small>${unlocked}/${categoryWeapons.length}</small>
+    `;
+    item.addEventListener("click", () => selectWeaponCategory(category.id));
+    ui.categories.appendChild(item);
+  });
 
   ui.weapons.innerHTML = "";
-  weapons.forEach((weapon) => {
+  weapons.filter((weapon) => weapon.category === state.activeCategory).forEach((weapon) => {
     const level = levelFor(weapon.id);
+    const remaining = cooldownRemaining(weapon.id);
+    const cooldownPct = weapon.cooldownMs ? Math.min(1, remaining / weapon.cooldownMs) : 0;
     const item = document.createElement("button");
     item.className = [
       "weapon",
       state.selected === weapon.id ? "selected" : "",
       state.equipped === weapon.id ? "armed" : "",
+      remaining > 0 ? "cooling" : "",
       level ? "" : "locked",
     ]
       .filter(Boolean)
       .join(" ");
+    item.dataset.weaponId = weapon.id;
     item.innerHTML = `
+      <span class="cooldown-fill" style="transform: scaleY(${cooldownPct})"></span>
       <span class="glyph" style="color: ${weapon.color}">${weapon.glyph}</span>
       <span>
         <h3>${weapon.name}</h3>
         <p>${weapon.note}</p>
-        <small>${level ? `Level ${level}${state.equipped === weapon.id ? " · Armed" : ""}` : "Tap to inspect unlock"}</small>
+        <small>${level ? `Level ${level} · ${weaponPower(weapon)} dmg · ${(weapon.cooldownMs / 1000).toFixed(1)}s` : "Tap to inspect unlock"}</small>
       </span>
       <strong class="price"><span>${level ? "Upgrade" : "Unlock"}</span>${format(nextCost(weapon))} coins</strong>
     `;
-    item.addEventListener("click", () => selectWeapon(weapon.id));
+    item.addEventListener("click", () => {
+      if (level) fireWeapon(weapon.id);
+      else selectWeapon(weapon.id);
+    });
     ui.weapons.appendChild(item);
   });
 
   ui.planets.innerHTML = "";
   solarPlanets.forEach((target) => {
     const stats = state.planetStats[target.id] || { destroyed: 0 };
+    const unlocked = planetUnlocked(target.id);
     const item = document.createElement("button");
-    item.className = `planet-choice ${state.selectedPlanet === target.id ? "active" : ""}`;
+    item.className = `planet-choice ${state.selectedPlanet === target.id ? "active" : ""} ${unlocked ? "" : "locked"}`;
     item.innerHTML = `
       <span class="planet-dot" style="background: radial-gradient(circle at 32% 26%, ${target.palette[2]}, ${target.palette[0]} 44%, ${target.palette[1]} 100%)"></span>
       <span>
         <strong>${target.name}</strong>
-        <span>${stats.destroyed ? `${stats.destroyed} shattered` : `${target.hp} HP`}</span>
+        <span>${unlocked ? (stats.destroyed ? `${stats.destroyed} shattered` : `${format(target.hp)} HP`) : `${format(target.unlockCost)} coins`}</span>
       </span>
     `;
     item.addEventListener("click", () => selectPlanet(target.id));
@@ -1124,6 +1286,17 @@ function drawCoinBursts(delta) {
   });
 }
 
+function updateCooldownUI() {
+  document.querySelectorAll(".weapon[data-weapon-id]").forEach((item) => {
+    const weapon = weaponById(item.dataset.weaponId);
+    const remaining = cooldownRemaining(weapon.id);
+    const fill = item.querySelector(".cooldown-fill");
+    if (!fill) return;
+    item.classList.toggle("cooling", remaining > 0);
+    fill.style.transform = `scaleY(${weapon.cooldownMs ? Math.min(1, remaining / weapon.cooldownMs) : 0})`;
+  });
+}
+
 function updateAimDamage(delta) {
   pointer.inside = pointer.active && pointOnPlanet(pointer.x, pointer.y);
   if (!pointer.inside || planet.exploding) {
@@ -1135,7 +1308,7 @@ function updateAimDamage(delta) {
   const interval = 115;
   while (aimAccumulator >= interval) {
     aimAccumulator -= interval;
-    dealDamage(pointer.x, pointer.y, 0.22, "aim");
+    dealDamage(pointer.x, pointer.y, 0.1, "aim");
   }
 }
 
@@ -1149,7 +1322,7 @@ function loop(time) {
     combo = Math.max(1, combo - rawDelta * 0.0011);
   }
 
-  updateAimDamage(rawDelta);
+  updateAimDamage(rawDelta * (state.speed || 1));
   updateExplosion(rawDelta);
   drawBackground(time);
   drawBeams(delta);
@@ -1158,6 +1331,7 @@ function loop(time) {
   drawDebris(delta);
   drawDamageNumbers(delta);
   drawCoinBursts(delta);
+  updateCooldownUI();
   ui.combo.textContent = `x${combo.toFixed(1)}`;
   ui.damageStage.textContent = damageStage();
   requestAnimationFrame(loop);
@@ -1184,6 +1358,13 @@ canvas.addEventListener("pointerleave", () => {
 
 ui.buy.addEventListener("click", buySelected);
 ui.reform.addEventListener("click", reformPlanet);
+ui.speedControls.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-speed]");
+  if (!button) return;
+  state.speed = Number(button.dataset.speed);
+  save();
+  renderUI();
+});
 ui.reset.addEventListener("click", () => {
   localStorage.removeItem("voidbreak-save");
   clearTargetEffects();

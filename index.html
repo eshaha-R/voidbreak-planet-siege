@@ -23,6 +23,11 @@
               <strong id="shards">0</strong>
               <span>Coins</span>
             </div>
+            <div id="speedControls" class="speed-controls" aria-label="Game speed">
+              <button type="button" data-speed="1">1x</button>
+              <button type="button" data-speed="2">2x</button>
+              <button type="button" data-speed="3">3x</button>
+            </div>
             <button id="reset" class="icon-button" title="Reset progress" aria-label="Reset progress">↻</button>
           </div>
         </div>
@@ -77,7 +82,10 @@
           </div>
         </div>
 
-        <div id="weapons" class="weapons"></div>
+        <div class="weapon-browser">
+          <div id="weaponCategories" class="weapon-categories" aria-label="Weapon categories"></div>
+          <div id="weapons" class="weapons"></div>
+        </div>
 
         <div class="stats">
           <div>

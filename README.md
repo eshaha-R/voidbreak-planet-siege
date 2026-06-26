@@ -19,9 +19,11 @@ Then visit `http://localhost:5173`.
 - Choose from Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.
 - Reform the current planet at any time after damaging or destroying it.
 - Inspect locked weapons before buying, then unlock, equip, and upgrade them.
+- Browse weapon categories from an icon rail: Beams, Orbit, Poppers, and Core.
+- Switch between 1x, 2x, and 3x play speed for faster aimed damage.
 - Use original weapons like Ion Harp, Gravity Loom, Solar Choir, Null Needle, Mirror Monolith, and Entropy Garden.
 - Build a resonance combo for stronger taps.
 - Aim directly at the planet to burn it continuously.
 - Watch planets crack, expose their core, shatter into chunks, and explode before the next target appears.
 - Progress saves locally in the browser.
-- Responsive sci-fi UI for desktop and mobile.
+- Responsive pastel arcade UI for desktop and mobile.
